@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
-namespace ConsulDemo.Controllers
+namespace ConsulDemo.Api.Controllers
 {
     [Route("[controller]")]
     public class ConfigController : Controller
@@ -16,7 +16,8 @@ namespace ConsulDemo.Controllers
         [HttpGet("{key}")]
         public IActionResult Get(string key)
         {
-            return Ok(_configuration.GetValue<string>(key));
+            var value = _configuration.GetValue<string>(key);
+            return Ok($"Setting key '{key}' has value '{value}'");
         }
     }
 }

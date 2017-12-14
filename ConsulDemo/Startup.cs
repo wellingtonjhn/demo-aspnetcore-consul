@@ -1,28 +1,32 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using ConsulDemo.Helpers.Configuration.Extensions;
+using ConsulDemo.Helpers.ServiceDiscovery.Extensions;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Threading;
-using ConfigurationBuilder = ConsulDemo.Extensions.ConfigurationBuilder;
 
-namespace ConsulDemo
+namespace ConsulDemo.Api
 {
     public class Startup
     {
-        public IConfigurationRoot Configuration { get; }
-        private readonly CancellationTokenSource _consulCancellationSource = new CancellationTokenSource();
+        private readonly CancellationTokenSource _cts = new CancellationTokenSource();
 
-        public Startup(IHostingEnvironment env)
+        private IConfiguration Configuration { get; }
+        private IHostingEnvironment Environment { get; }
+
+        public Startup(IConfiguration configuration, IHostingEnvironment environment)
         {
-            var consulKey = $"{env.ApplicationName}/{env.EnvironmentName}/appsettings";
-            Configuration = ConfigurationBuilder.ConfigureConsulProvider(consulKey, env, _consulCancellationSource);
+            Configuration = configuration;
+            Environment = environment;
         }
 
         public void ConfigureServices(IServiceCollection services)
         {
             services
-                .AddSingleton(Configuration)
+                .AddConsul(Configuration)
+                .AddConsulKeyValueStore("appsettings", Configuration, Environment, _cts)
                 .AddLogging()
                 .AddMvc();
         }
@@ -34,11 +38,10 @@ namespace ConsulDemo
                 app.UseDeveloperExceptionPage();
             }
 
-            loggerFactory
-                .AddConsole(LogLevel.Debug)
-                .AddDebug(LogLevel.Debug);
+            loggerFactory.AddLog4Net();
 
-            app.UseMvc();
+            app.UseConsulServiceRegistry("aspnet", "service", "demo", "consul")
+                .UseMvc();
         }
     }
 }

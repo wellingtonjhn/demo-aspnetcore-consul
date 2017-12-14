@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 
-namespace ConsulDemo
+namespace ConsulDemo.Api
 {
     public class Program
     {
